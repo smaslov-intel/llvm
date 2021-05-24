@@ -5678,6 +5678,14 @@ static pi_result USMDeviceAllocImpl(void **ResultPtr, pi_context Context,
   ze_device_mem_alloc_desc_t ZeDesc = {};
   ZeDesc.flags = 0;
   ZeDesc.ordinal = 0;
+
+  if (Size > Device->ZeDeviceProperties.maxMemAllocSize) {
+    // Tell Level-Zero to accept > maxMemAllocSize
+    ze_relaxed_allocation_limits_exp_desc_t RelaxedDesc = {};
+    RelaxedDesc.stype = ZE_STRUCTURE_TYPE_RELAXED_ALLOCATION_LIMITS_EXP_DESC;
+    RelaxedDesc.flags = ZE_RELAXED_ALLOCATION_LIMITS_EXP_FLAG_MAX_SIZE;
+    ZeDesc.pNext = &RelaxedDesc;
+  }
   ZE_CALL(zeMemAllocDevice, (Context->ZeContext, &ZeDesc, Size, Alignment,
                              Device->ZeDevice, ResultPtr));
 
